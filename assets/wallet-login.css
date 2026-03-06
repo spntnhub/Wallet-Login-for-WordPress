@@ -1,0 +1,33 @@
+/* Wallet Login for WordPress — wallet-login.css */
+
+.wl-wrap {
+  margin: 1.25rem 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.wl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: .5rem;
+  padding: .65rem 1.3rem;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+  line-height: 1;
+}
+.wl-btn:hover:not(:disabled) { background: #333; }
+.wl-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.wl-status {
+  margin-top: .5rem;
+  font-size: .8rem;
+  color: #6b7280;
+  min-height: 1.1em;
+}
+.wl-status--success { color: #16a34a; }
+.wl-status--error   { color: #dc2626; }
