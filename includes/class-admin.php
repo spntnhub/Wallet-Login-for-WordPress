@@ -41,6 +41,7 @@ class WL_Admin {
     public static function render_page(): void {
         $opts = get_option( WL_OPTION_KEY, [] );
         $roles = wp_roles()->get_names();
+        $default_api_url = 'https://nft-saas-production.up.railway.app';
         ?>
         <div class="wrap">
           <h1>Wallet Login — Settings</h1>
@@ -62,9 +63,9 @@ class WL_Admin {
                 <th scope="row"><label for="wl-api-url">Backend URL</label></th>
                 <td>
                   <input id="wl-api-url" type="url" name="<?= WL_OPTION_KEY ?>[api_url]"
-                    value="<?= esc_attr( $opts['api_url'] ?? '' ) ?>" class="regular-text"
-                    placeholder="https://nft-saas-production.up.railway.app">
-                  <p class="description">URL of your NFT SaaS backend (no trailing slash needed).</p>
+                    value="<?= esc_attr( $opts['api_url'] ?? $default_api_url ) ?>" class="regular-text"
+                    placeholder="<?= esc_attr( $default_api_url ) ?>">
+                  <p class="description">URL of your NFT SaaS backend. Leave as-is if you are using the hosted service.</p>
                 </td>
               </tr>
 
@@ -73,7 +74,12 @@ class WL_Admin {
                 <td>
                   <input id="wl-api-key" type="password" name="<?= WL_OPTION_KEY ?>[api_key]"
                     value="<?= esc_attr( $opts['api_key'] ?? '' ) ?>" class="regular-text" autocomplete="off">
-                  <p class="description">Your NFT SaaS API key (Dashboard → API Keys).</p>
+                  <p class="description">
+                    Your NFT SaaS API key.
+                    <?php if ( empty( $opts['api_key'] ) ): ?>
+                      <br><a href="#" id="wl-get-key-link" style="font-weight:600;">✨ Don't have one? Get your free API key here.</a>
+                    <?php endif; ?>
+                  </p>
                 </td>
               </tr>
 
@@ -123,6 +129,96 @@ class WL_Admin {
           <h2>Shortcode</h2>
           <p>Add <code>[wallet_login]</code> to any page or widget to display the login button.</p>
         </div>
+
+        <!-- Get API Key Modal -->
+        <div id="wl-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;"></div>
+        <div id="wl-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:28px 32px;border-radius:8px;z-index:10000;box-shadow:0 10px 30px rgba(0,0,0,.2);width:420px;max-width:92%;">
+          <h2 style="margin-top:0;">✨ Get your free API Key</h2>
+          <p style="color:#555;">Enter your email address. Your API key will be generated instantly and sent to your inbox from <strong>info@spntn.com</strong>.</p>
+          <div id="wl-reg-feedback" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:5px;font-size:.875rem;"></div>
+          <p>
+            <label style="font-weight:600;display:block;margin-bottom:4px;">Email Address</label>
+            <input type="email" id="wl-reg-email" class="large-text" placeholder="you@example.com" style="width:100%;">
+          </p>
+          <div style="text-align:right;margin-top:18px;display:flex;gap:8px;justify-content:flex-end;">
+            <button type="button" class="button" id="wl-modal-cancel">Cancel</button>
+            <button type="button" class="button button-primary" id="wl-modal-submit">✨ Get API Key</button>
+          </div>
+        </div>
+
+        <script>
+        (function($){
+          var apiUrl = function() {
+            return $('#wl-api-url').val().trim().replace(/\/$/, '')
+              || '<?= esc_js( 'https://nft-saas-production.up.railway.app' ) ?>';
+          };
+
+          // Open modal
+          $(document).on('click', '#wl-get-key-link', function(e){
+            e.preventDefault();
+            $('#wl-reg-feedback').hide();
+            $('#wl-reg-email').val('');
+            $('#wl-modal, #wl-modal-overlay').fadeIn(150);
+            setTimeout(function(){ $('#wl-reg-email').focus(); }, 160);
+          });
+
+          // Close modal
+          $(document).on('click', '#wl-modal-cancel, #wl-modal-overlay', function(){
+            $('#wl-modal, #wl-modal-overlay').fadeOut(150);
+          });
+
+          // Submit
+          $(document).on('click', '#wl-modal-submit', function(){
+            var email = $('#wl-reg-email').val().trim();
+            if (!email) {
+              feedback('error', 'Please enter your email address.');
+              return;
+            }
+            var $btn = $(this).prop('disabled', true).text('Connecting…');
+            clearFeedback();
+
+            $.ajax({
+              url:         apiUrl() + '/api/auth/activate',
+              method:      'POST',
+              contentType: 'application/json',
+              data:        JSON.stringify({ email: email, siteUrl: window.location.origin }),
+              timeout:     15000,
+            })
+            .done(function(res){
+              if (res.apiKey) {
+                $('#wl-api-key').val(res.apiKey).attr('type', 'text');
+                feedback('success',
+                  '✅ API key generated! <strong>Click Save Settings below to save it.</strong>'
+                );
+                $('input[type="submit"]').first().css('background','#00a32a').focus();
+                $('#wl-get-key-link').hide();
+                setTimeout(function(){ $('#wl-modal, #wl-modal-overlay').fadeOut(200); }, 1800);
+              } else {
+                feedback('error', 'Unexpected response. Please try again.');
+              }
+            })
+            .fail(function(xhr){
+              var msg = (xhr.responseJSON && xhr.responseJSON.error)
+                ? xhr.responseJSON.error
+                : 'Could not connect to backend. Check the Backend URL field.';
+              feedback('error', '❌ ' + msg);
+            })
+            .always(function(){
+              $btn.prop('disabled', false).text('✨ Get API Key');
+            });
+          });
+
+          function feedback(type, msg) {
+            var colors = { success: { bg:'#d1fae5', border:'#6ee7b7', text:'#065f46' },
+                           error:   { bg:'#fee2e2', border:'#fca5a5', text:'#991b1b' } };
+            var c = colors[type];
+            $('#wl-reg-feedback')
+              .css({ background: c.bg, border: '1px solid ' + c.border, color: c.text })
+              .html(msg).show();
+          }
+          function clearFeedback() { $('#wl-reg-feedback').hide(); }
+        })(jQuery);
+        </script>
         <?php
     }
 }
