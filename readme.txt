@@ -8,11 +8,13 @@ Stable tag:         1.0.0
 License:            GPL-2.0-or-later
 License URI:        https://www.gnu.org/licenses/gpl-2.0.html
 
-Let users sign in to WordPress with their crypto wallet (MetaMask / WalletConnect). No password needed.
+Let users sign in to WordPress with their crypto wallet (MetaMask / WalletConnect). No password needed. 100% free — no subscription, no per-login fee.
 
 == Description ==
 
 Wallet Login for WordPress replaces the traditional username/password login with a crypto wallet signature flow.
+
+**This plugin is completely free.** No subscription plans, no per-login charges, no usage limits. The hosted backend service is provided free of charge by spntn.
 
 **How it works:**
 

@@ -6,6 +6,8 @@ Let users sign in to your WordPress site using their crypto wallet — no passwo
 🌍 **Repo:** [github.com/spntnhub/Wallet-Login-for-WordPress](https://github.com/spntnhub/Wallet-Login-for-WordPress)  
 🔗 **Backend:** [github.com/spntnhub/nft-saas](https://github.com/spntnhub/nft-saas)
 
+> **100% free.** No subscription, no per-login fee, no credit card required. The plugin and the hosted backend service are both free to use.
+
 ---
 
 ## How It Works
@@ -131,6 +133,12 @@ Both endpoints require `x-api-key` header authentication.
 - SIWE (Sign-In with Ethereum) standard
 - WalletConnect v2 modal
 - Gutenberg block
+
+---
+
+## Pricing
+
+**Free.** No subscription, no per-login fee, no limits on logins or users. The hosted backend service (`nft-saas-production.up.railway.app`) is provided free of charge.
 
 ---
 
