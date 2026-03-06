@@ -32,11 +32,11 @@ Signature verification happens **server-side** via the NFT SaaS backend. The API
 
 1. Download `wallet-login-wp.zip` and upload via **Plugins → Add New → Upload Plugin**
 2. Activate the plugin
-3. Go to **Settings → Wallet Login** and enter:
-   - **Backend URL** — your NFT SaaS backend (e.g. `https://nft-saas-production.up.railway.app`)
-   - **API Key** — from your NFT SaaS dashboard (Dashboard → API Keys)
-4. Check **Enable Plugin** and save
-5. The login button now appears on the WordPress login page automatically
+3. Go to **Settings → Wallet Login**
+4. Click **"✨ Don't have one? Get your free API key here."** — enter your email address and click **Get API Key**. Your key is generated instantly and a confirmation is sent from **info@spntn.com**
+5. The Backend URL is pre-filled with the hosted service — no change needed
+6. Check **Enable Plugin** and click **Save Settings**
+7. The login button now appears on the WordPress login page automatically
 
 ---
 
@@ -93,8 +93,7 @@ Embed the login button anywhere on your site:
 
 - WordPress 6.0+
 - PHP 7.4+
-- An active [NFT SaaS backend](https://github.com/spntnhub/nft-saas) (self-hosted or Railway)
-- An NFT SaaS API key
+- Internet access to the NFT SaaS backend (hosted at `nft-saas-production.up.railway.app` by default — no self-hosting required)
 
 ---
 
