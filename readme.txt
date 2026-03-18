@@ -1,10 +1,10 @@
-=== Wallet Login for WordPress ===
+=== Wallet Login ===
 Contributors:       spntn
-Tags:               wallet, web3, crypto, login, metamask, ethereum, polygon
+Tags:               wallet, web3, crypto, login, metamask
 Requires at least:  6.0
-Tested up to:       6.7
+Tested up to:       6.9
 Requires PHP:       7.4
-Stable tag:         1.0.0
+Stable tag:         1.3.0
 License:            GPL-2.0-or-later
 License URI:        https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Let users sign in to WordPress with their crypto wallet (MetaMask / WalletConnec
 
 == Description ==
 
-Wallet Login for WordPress replaces the traditional username/password login with a crypto wallet signature flow.
+Wallet Login replaces the traditional username/password login with a crypto wallet signature flow.
 
 **This plugin is completely free.** No subscription plans, no per-login charges, no usage limits. The hosted backend service is provided free of charge by spntn.
 
@@ -40,16 +40,21 @@ Wallet Login for WordPress replaces the traditional username/password login with
 * An active NFT SaaS backend (self-hosted or Railway)
 * An NFT SaaS API key (Dashboard → API Keys)
 
-== External Services ==
+== External services ==
 
-This plugin connects to your NFT SaaS backend to:
-- Obtain a one-time nonce (`GET /api/v2/wallet-login/nonce`)
-- Verify the wallet signature (`POST /api/v2/wallet-login/verify`)
+The Wallet Login plugin interacts with several external services:
 
-You configure the backend URL in Settings → Wallet Login. No data is sent to third-party services by this plugin itself.
+- **NFT SaaS Backend API**
+  - URL: https://nft-saas-production.up.railway.app
+  - Purpose: Handles wallet authentication, nonce generation, signature verification, and user mapping. All plugin features rely on this API for core operations.
 
-ethers.js (v6) is loaded from cdnjs.cloudflare.com for wallet interaction.
-Privacy policy: https://www.cloudflare.com/privacypolicy/
+- **Polygon Mainnet**
+  - Purpose: Wallet verification and NFT ownership checks are performed on Polygon Mainnet via smart contracts. The plugin interacts with Polygon using ethers.js.
+
+- **Explorer Links**
+  - Purpose: Plugin provides links to Polygon block explorers (e.g., Polygonscan) for transaction and wallet verification.
+
+API keys and sensitive credentials are stored server-side and never exposed to frontend users.
 
 == Installation ==
 
@@ -76,9 +81,27 @@ Yes — uncheck "Auto-create users" in Settings → Wallet Login. Only wallets a
 
 == Changelog ==
 
+= 1.0.2 =
+* Improved API key activation modal with clearer messaging.
+* "100% free" indicator added to settings page.
+
 = 1.0.0 =
 * Initial release
 * Nonce + signature flow via NFT SaaS backend
 * Auto user creation with configurable role
 * Shortcode `[wallet_login]`
 * Admin settings page
+
+== Screenshots ==
+
+1. Login button injected into the WordPress login page.
+2. MetaMask signature prompt during wallet authentication.
+3. Plugin settings page (Settings → Wallet Login).
+
+== Upgrade Notice ==
+
+= 1.0.2 =
+Minor UX improvements to the settings page.
+
+= 1.0.0 =
+Initial release.

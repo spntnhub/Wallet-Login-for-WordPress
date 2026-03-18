@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name:       Wallet Login for WordPress
+ * Plugin Name:       Wallet Login
  * Plugin URI:        https://github.com/spntnhub/Wallet-Login-for-WordPress
  * Description:       Let users log in to WordPress using their crypto wallet (MetaMask / WalletConnect). Powered by NFT SaaS backend.
- * Version:           1.0.0
+ * Version:           1.3.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            spntn
@@ -15,8 +15,8 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'WL_VERSION',    '1.0.0' );
-define( 'WL_OPTION_KEY', 'wallet_login_options' );
+define( 'WL_VERSION',    '1.3.0' );
+define( 'WL_OPTION_KEY', 'wl_wallet_login_options' );
 define( 'WL_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WL_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -27,7 +27,7 @@ require_once WL_PLUGIN_DIR . 'includes/class-admin.php';
 // ── Boot ──────────────────────────────────────────────────────────────────────
 add_action( 'init',           'wl_init' );
 add_action( 'login_form',     'wl_inject_login_button' );
-add_action( 'wp_enqueue_scripts', 'wl_enqueue' );
+add_action( 'wp_enqueue_scripts', 'wl_enqueue_assets' );
 add_action( 'login_enqueue_scripts', 'wl_enqueue' );
 add_shortcode( 'wallet_login', 'wl_shortcode' );
 
@@ -41,35 +41,26 @@ function wl_init() {
 }
 
 // ── Enqueue assets ────────────────────────────────────────────────────────────
-function wl_enqueue() {
-    $options = get_option( WL_OPTION_KEY, [] );
-    if ( empty( $options['enabled'] ) ) return;
-
-    wp_enqueue_script(
-        'ethers',
-        'https://cdnjs.cloudflare.com/ajax/libs/ethers/6.10.0/ethers.umd.min.js',
-        [],
-        '6.10.0',
-        true
-    );
-    wp_enqueue_script(
-        'wallet-login',
-        WL_PLUGIN_URL . 'assets/wallet-login.js',
-        [ 'ethers' ],
-        WL_VERSION,
-        true
-    );
-    wp_localize_script( 'wallet-login', 'WL', [
-        'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
-        'nonce'    => wp_create_nonce( 'wl_nonce' ),
-        'redirect' => $options['redirect_url'] ?? home_url(),
-        'label'    => $options['button_label'] ?? 'Login with Wallet',
-    ] );
+function wl_enqueue_assets() {
     wp_enqueue_style(
-        'wallet-login',
+        'wl-wallet-login',
         WL_PLUGIN_URL . 'assets/wallet-login.css',
         [],
         WL_VERSION
+    );
+    wp_enqueue_script(
+        'wl-wallet-login',
+        WL_PLUGIN_URL . 'assets/wallet-login.js',
+        [],
+        WL_VERSION,
+        true
+    );
+    wp_enqueue_script(
+        'wl-ethers',
+        WL_PLUGIN_URL . 'assets/ethers.umd.min.js',
+        [],
+        '6.13.2',
+        true
     );
 }
 
@@ -77,14 +68,25 @@ function wl_enqueue() {
 function wl_inject_login_button() {
     $options = get_option( WL_OPTION_KEY, [] );
     if ( empty( $options['enabled'] ) ) return;
-    echo wl_button_html();
+    echo wp_kses( wl_button_html(), wl_allowed_html() );
 }
 
 // ── Shortcode ─────────────────────────────────────────────────────────────────
 function wl_shortcode( $atts = [] ) {
     $options = get_option( WL_OPTION_KEY, [] );
     if ( empty( $options['enabled'] ) ) return '';
-    return wl_button_html();
+    return wp_kses( wl_button_html(), wl_allowed_html() );
+}
+
+function wl_allowed_html(): array {
+    return [
+        'div'    => [ 'class' => [], 'id' => [] ],
+        'button' => [ 'type' => [], 'id' => [], 'class' => [] ],
+        'svg'    => [ 'width' => [], 'height' => [], 'viewbox' => [], 'fill' => [], 'stroke' => [], 'stroke-width' => [], 'aria-hidden' => [] ],
+        'path'   => [ 'd' => [] ],
+        'circle' => [ 'cx' => [], 'cy' => [], 'r' => [] ],
+        'p'      => [ 'id' => [], 'class' => [], 'aria-live' => [] ],
+    ];
 }
 
 function wl_button_html(): string {
@@ -94,7 +96,7 @@ function wl_button_html(): string {
     <div class="wl-wrap">
       <button type="button" id="wl-connect-btn" class="wl-btn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><circle cx="17" cy="12" r="1"/></svg>
-        <?= $label ?>
+        <?php echo esc_html( $label ); ?>
       </button>
       <p id="wl-status" class="wl-status" aria-live="polite"></p>
     </div>
@@ -105,7 +107,7 @@ function wl_button_html(): string {
 // ── AJAX: get nonce ───────────────────────────────────────────────────────────
 function wl_ajax_nonce() {
     check_ajax_referer( 'wl_nonce', 'nonce' );
-    $address = sanitize_text_field( $_POST['address'] ?? '' );
+    $address = sanitize_text_field( wp_unslash( $_POST['address'] ?? '' ) );
     if ( ! $address ) wp_send_json_error( [ 'message' => 'Address required.' ] );
 
     $result = WL_Auth::get_nonce( $address );
@@ -118,9 +120,9 @@ function wl_ajax_nonce() {
 // ── AJAX: verify signature & log in ──────────────────────────────────────────
 function wl_ajax_verify() {
     check_ajax_referer( 'wl_nonce', 'nonce' );
-    $address   = sanitize_text_field( $_POST['address']   ?? '' );
-    $signature = sanitize_text_field( $_POST['signature'] ?? '' );
-    $nonce     = sanitize_text_field( $_POST['wl_nonce']  ?? '' );
+    $address   = sanitize_text_field( wp_unslash( $_POST['address']   ?? '' ) );
+    $signature = sanitize_text_field( wp_unslash( $_POST['signature'] ?? '' ) );
+    $nonce     = sanitize_text_field( wp_unslash( $_POST['wl_nonce']  ?? '' ) );
 
     if ( ! $address || ! $signature || ! $nonce ) {
         wp_send_json_error( [ 'message' => 'Missing parameters.' ] );
