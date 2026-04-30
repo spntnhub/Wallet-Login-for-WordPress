@@ -81,16 +81,23 @@ Yes — uncheck "Auto-create users" in Settings → Wallet Login. Only wallets a
 
 == Changelog ==
 
+= 1.3.0 =
+* Added `ethers.js` bundled locally — no external CDN dependency.
+* Fixed missing assets on the WordPress login page (login_enqueue_scripts hook).
+* Moved admin page JavaScript to `admin_enqueue_scripts` hook — removed inline scripts.
+* Replaced PHP short echo tags (`<?=`) with `<?php echo` throughout.
+* Removed emoji from admin interface.
+
 = 1.0.2 =
 * Improved API key activation modal with clearer messaging.
 * "100% free" indicator added to settings page.
 
 = 1.0.0 =
-* Initial release
-* Nonce + signature flow via NFT SaaS backend
-* Auto user creation with configurable role
-* Shortcode `[wallet_login]`
-* Admin settings page
+* Initial release.
+* Nonce + signature flow via NFT SaaS backend.
+* Auto user creation with configurable role.
+* Shortcode `[wallet_login]`.
+* Admin settings page.
 
 == Screenshots ==
 
@@ -100,8 +107,5 @@ Yes — uncheck "Auto-create users" in Settings → Wallet Login. Only wallets a
 
 == Upgrade Notice ==
 
-= 1.0.2 =
-Minor UX improvements to the settings page.
-
-= 1.0.0 =
-Initial release.
+= 1.3.0 =
+Recommended update. Bundles ethers.js locally, fixes login page asset loading, and removes inline scripts for WordPress.org compliance.

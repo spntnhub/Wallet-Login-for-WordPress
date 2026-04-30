@@ -49,19 +49,24 @@ function wl_enqueue_assets() {
         WL_VERSION
     );
     wp_enqueue_script(
-        'wl-wallet-login',
-        WL_PLUGIN_URL . 'assets/wallet-login.js',
-        [],
-        WL_VERSION,
-        true
-    );
-    wp_enqueue_script(
         'wl-ethers',
         WL_PLUGIN_URL . 'assets/ethers.umd.min.js',
         [],
         '6.13.2',
         true
     );
+    wp_enqueue_script(
+        'wl-wallet-login',
+        WL_PLUGIN_URL . 'assets/wallet-login.js',
+        [ 'wl-ethers' ],
+        WL_VERSION,
+        true
+    );
+}
+
+// login_enqueue_scripts fires on wp-login.php — reuse the same assets.
+function wl_enqueue() {
+    wl_enqueue_assets();
 }
 
 // ── Login page button injection ───────────────────────────────────────────────

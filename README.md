@@ -2,9 +2,8 @@
 
 Let users sign in to your WordPress site using their crypto wallet — no password needed.
 
-📦 **Download:** [`wallet-login-wp.zip`](https://github.com/spntnhub/Wallet-Login-for-WordPress/releases/latest/download/wallet-login-wp.zip)  
-🌍 **Repo:** [github.com/spntnhub/Wallet-Login-for-WordPress](https://github.com/spntnhub/Wallet-Login-for-WordPress)  
-🔗 **Backend:** [github.com/spntnhub/nft-saas](https://github.com/spntnhub/nft-saas)
+**Download:** [wallet-login-wp.zip](https://github.com/spntnhub/Wallet-Login-for-WordPress/releases/latest/download/wallet-login-wp.zip)
+**Repo:** [github.com/spntnhub/Wallet-Login-for-WordPress](https://github.com/spntnhub/Wallet-Login-for-WordPress)
 
 > **100% free.** No subscription, no per-login fee, no credit card required. The plugin and the hosted backend service are both free to use.
 
@@ -21,7 +20,7 @@ Backend issues a single-use nonce (5 min TTL)
         ↓
 User signs the message — no gas, no transaction
         ↓
-Backend verifies the EIP-191 signature (ethers.js)
+Backend verifies the EIP-191 signature server-side
         ↓
 WordPress session created (user auto-created if new)
 ```
@@ -35,7 +34,7 @@ Signature verification happens **server-side** via the NFT SaaS backend. The API
 1. Download `wallet-login-wp.zip` and upload via **Plugins → Add New → Upload Plugin**
 2. Activate the plugin
 3. Go to **Settings → Wallet Login**
-4. Click **"✨ Don't have one? Get your free API key here."** — enter your email address and click **Get API Key**. Your key is generated instantly and a confirmation is sent from **info@spntn.com**
+4. Click **"Don't have one? Get your free API key here."** — enter your email and click **Get API Key**. Your key is generated instantly
 5. The Backend URL is pre-filled with the hosted service — no change needed
 6. Check **Enable Plugin** and click **Save Settings**
 7. The login button now appears on the WordPress login page automatically
@@ -73,7 +72,7 @@ Embed the login button anywhere on your site:
 | Setting | Default | Description |
 |---|---|---|
 | Enable Plugin | off | Show the login button |
-| Backend URL | — | NFT SaaS backend URL |
+| Backend URL | hosted service | NFT SaaS backend URL |
 | API Key | — | Your NFT SaaS API key |
 | Auto-create users | on | Create WP user for unknown wallets |
 | Default Role | subscriber | Role assigned to new wallet users |
@@ -85,7 +84,7 @@ Embed the login button anywhere on your site:
 ## Security
 
 - Nonce is single-use and expires after 5 minutes (Redis TTL)
-- Signature is verified server-side with `ethers.verifyMessage` — the browser cannot forge it
+- Signature is verified server-side — the browser cannot forge it
 - API key is stored in WP options and only used in server-side PHP requests — never sent to the browser
 - All AJAX endpoints are protected with `check_ajax_referer`
 
@@ -96,23 +95,6 @@ Embed the login button anywhere on your site:
 - WordPress 6.0+
 - PHP 7.4+
 - Internet access to the NFT SaaS backend (hosted at `nft-saas-production.up.railway.app` by default — no self-hosting required)
-
----
-
-## File Structure
-
-```
-wallet-login/
-├── wallet-login.php          # Plugin bootstrap, hooks, AJAX handlers
-├── includes/
-│   ├── class-auth.php        # Backend nonce + verify calls
-│   ├── class-user.php        # Find or create WP user by wallet address
-│   └── class-admin.php       # Settings → Wallet Login admin page
-├── assets/
-│   ├── wallet-login.js       # ethers.js connect + personal_sign flow
-│   └── wallet-login.css      # Button and status styles
-└── readme.txt                # WordPress Plugin Directory readme
-```
 
 ---
 
@@ -127,23 +109,6 @@ Both endpoints require `x-api-key` header authentication.
 
 ---
 
-## Future Extensions
-
-- Token-gated roles (NFT holder → editor/author)
-- SIWE (Sign-In with Ethereum) standard
-- WalletConnect v2 modal
-- Gutenberg block
-
----
-
-## Pricing
-
-**Free.** No subscription, no per-login fee, no limits on logins or users. The hosted backend service (`nft-saas-production.up.railway.app`) is provided free of charge.
-
----
-
 ## License
 
 GPL-2.0-or-later — see [LICENSE](LICENSE)
-
-Backend & infrastructure: Proprietary ([github.com/spntnhub/nft-saas](https://github.com/spntnhub/nft-saas))
